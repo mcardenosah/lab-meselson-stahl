@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorio Meselson y Stahl</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F5EF;--ink:#1F2A37;--teal:#0F766E;--orange:#C2410C;--card:#fff;--line:#D9D4C7;--muted:#55606E}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",Verdana,Arial,sans-serif;font-size:18px;line-height:1.6;text-align:left}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 20px 60px}
+header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:8px}
+h1{font-size:30px;line-height:1.25;margin:0 0 4px}
+h2{font-size:22px;margin:0 0 8px;color:var(--teal)}
+h3{font-size:18px;margin:0 0 4px}
+p{margin:0 0 10px}
+.sub{color:var(--muted);margin:0}
+.lang button{font:inherit;padding:6px 14px;border:2px solid var(--ink);background:#fff;cursor:pointer}
+.lang button:first-child{border-radius:8px 0 0 8px}.lang button:last-child{border-radius:0 8px 8px 0;border-left:0}
+.lang button.on{background:var(--ink);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-top:16px}
+.models{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.model{border:1px solid var(--line);border-radius:10px;padding:12px;background:#FBFAF6}
+.btn{font:inherit;font-weight:700;padding:10px 16px;border-radius:10px;border:2px solid var(--teal);background:var(--teal);color:#fff;cursor:pointer}
+.btn.alt{background:#fff;color:var(--teal)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.lang button:focus-visible,input:focus-visible,textarea:focus-visible,.modecard:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.dots{display:flex;gap:6px;align-items:center}
+.dot{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:14px;background:#fff}
+.dot.on{border-color:var(--teal);background:var(--teal);color:#fff}
+.dot.cur{outline:3px solid var(--orange)}
+.samp{border-top:1px solid var(--line);padding:12px 0}
+.samp .lab{font-weight:700}
+.samp .read{color:var(--muted);font-size:16px}
+details.samp>summary{cursor:pointer}
+canvas{width:100%;display:block;border-radius:8px}
+canvas.mk{cursor:crosshair}
+.preds{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.preds div{font-size:15px}
+.ok{color:var(--teal);font-weight:700}.no{color:var(--orange);font-weight:700}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#F0EDE3}
+.concl{border-left:6px solid var(--teal);background:#E8F3F1;padding:14px 16px;border-radius:0 10px 10px 0}
+.concl.win{border-left-color:var(--orange);background:#FDEFE7}
+.mols{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.molcol{min-width:70px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:16px;margin:6px 0}
+.sw{display:inline-block;width:26px;vertical-align:middle;margin-right:6px}
+label{cursor:pointer}
+input[type=checkbox],input[type=radio]{width:20px;height:20px;vertical-align:middle;accent-color:var(--teal)}
+details summary{cursor:pointer;font-weight:700}
+footer{margin-top:20px;font-size:15px;color:var(--muted)}
+footer a{color:var(--teal)}
+.note{font-size:16px;color:var(--muted)}
+.modepick{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:12px}
+.modecard{font:inherit;color:var(--ink);text-align:left;border:2px solid var(--teal);border-radius:14px;background:#fff;padding:20px;cursor:pointer}
+.modecard b{display:block;color:var(--teal);font-size:24px;margin-bottom:6px}
+.modebar{background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px 14px}
+.hyp,.votes{background:#FBFAF6;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px}
+.vote{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:#fff}
+.vote .btn{padding:2px 14px}
+.vote .n{min-width:32px;text-align:center;font-size:1.3em}
+textarea{font:inherit;width:100%;min-height:70px;border:2px solid var(--line);border-radius:8px;padding:8px;background:#fff;color:var(--ink)}
+.fb{border-radius:10px;padding:10px 12px;margin-top:10px}
+.fbok{background:#E8F3F1;border-left:6px solid var(--teal)}
+.fbno{background:#FDEFE7;border-left:6px solid var(--orange)}
+fieldset.q{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0}
+fieldset.q legend{padding:0 6px}
+.opt{display:block;margin:6px 0}
+body.proj{font-size:24px}
+body.proj .wrap{max-width:1500px}
+body.proj h1{font-size:40px}body.proj h2{font-size:30px}body.proj h3{font-size:24px}
+body.proj .note,body.proj .samp .read,body.proj .legend{font-size:22px}
+body.proj .preds div{font-size:20px}
+body.proj .dot{width:44px;height:44px;font-size:18px}
+body.proj input[type=checkbox],body.proj input[type=radio]{width:28px;height:28px}
+@media print{.lang,.btn,.modebar,#quiz,#mdetcard,#sumtxt,footer{display:none!important}body{background:#fff}.card{break-inside:avoid;border:1px solid #999}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+//CORE-START
+const RHO={L:1.710,M:1.717,H:1.724};
+const SS={L:1.725,H:1.739};
+const RMIN=1.703,RMAX=1.746;
+const MODELS=['semi','cons','disp'];
+function predict(model,g,heated){
+  const H=RHO.H,L=RHO.L,M=RHO.M,p=Math.pow(2,-g);let b;
+  if(!heated){
+    if(model==='semi'){
+      if(g<=1){const e=Math.pow(2,g);b=[{rho:H,w:(2-e)/e},{rho:M,w:2*(e-1)/e}];}
+      else{const h=Math.pow(2,1-g);b=[{rho:M,w:h},{rho:L,w:1-h}];}
+    }
+    else if(model==='cons') b=[{rho:H,w:p},{rho:L,w:1-p}];
+    else b=[{rho:L+(H-L)*p,w:1}];
+  }else{
+    if(model==='disp') b=[{rho:SS.L+(SS.H-SS.L)*p,w:1}];
+    else b=[{rho:SS.H,w:p},{rho:SS.L,w:1-p}];
+  }
+  return b.filter(x=>x.w>0.001);
+}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function seedOf(world,g,heated){return (world.charCodeAt(0)*131+Math.round(g*10)*17+(heated?7:3))*2654435761>>>0}
+function observe(world,g,heated){
+  const r=mulberry32(seedOf(world,g,heated));
+  return predict(world,g,heated).map(b=>({rho:b.rho+(r()-.5)*0.0007,w:Math.min(1,Math.max(0.01,b.w+(r()-.5)*0.05))}));
+}
+function matches(pred,obs){
+  const P=pred.filter(b=>b.w>=0.03),O=obs.filter(b=>b.w>=0.03);
+  if(P.length!==O.length) return false;
+  return P.every(p=>O.some(o=>Math.abs(o.rho-p.rho)<=0.0022&&Math.abs(o.w-p.w)<=0.14));
+}
+function aliveModels(samples,world){
+  return MODELS.filter(m=>samples.every(s=>matches(predict(m,s.gen,s.heated),observe(world,s.gen,s.heated))));
+}
+function molecules(model,g){
+  const n=Math.pow(2,g),seg=(c)=>Array(16).fill(c);
+  if(model==='semi'){
+    if(g===0) return [[seg('H'),seg('H')]];
+    return Array.from({length:n},(_,i)=>i<2?[seg('H'),seg('L')]:[seg('L'),seg('L')]);
+  }
+  if(model==='cons') return Array.from({length:n},(_,i)=>i===0?[seg('H'),seg('H')]:[seg('L'),seg('L')]);
+  const k=Math.round(16*Math.pow(2,-g));
+  const st=(shift)=>Array.from({length:16},(_,i)=>{const j=(i+shift)%16;return Math.floor((j+1)*k/16)>Math.floor(j*k/16)?'H':'L'});
+  return Array.from({length:n},()=>[st(0),st(8)]);
+}
+//CORE-END
+
+const I18N={
+es:{
+title:'Laboratorio virtual: el experimento de Meselson y Stahl',
+sub:'¿Cómo se copia el ADN? Simula el cultivo, la centrifugación en gradiente de densidad y comprueba qué modelo resiste.',
+modeQ:'¿Cómo vas a usar el laboratorio?',
+modes:{proj:{t:'Proyectar en clase',d:'Para la pizarra digital: letra grande, marcas y votación de la clase, ritmo marcado por el docente, cultivo no sincronizado y opción de cambiar la «realidad» simulada.'},
+ind:{t:'Trabajo individual',d:'Para cada alumno: predicción propia en el tubo, hipótesis escrita, progreso guardado en el navegador, resumen para el cuaderno y preguntas tipo PAU.'}},
+modeNow:'Modo',change:'Cambiar modo',reset:'Empezar de nuevo',
+names:{semi:'Semiconservativo',cons:'Conservativo',disp:'Dispersivo'},
+desc:{semi:'Cada molécula hija conserva una cadena parental y sintetiza una cadena nueva.',cons:'La molécula original se conserva intacta y se sintetiza una molécula hija totalmente nueva.',disp:'Las cadenas hijas son mosaicos: tramos parentales y tramos nuevos mezclados.'},
+h0:'Tres hipótesis sobre la replicación del ADN (1957)',
+h0p:'En 1958 los tres modelos eran posibles. El experimento debe producir un resultado que contradiga al menos uno de ellos.',
+h1:'1 · Cultivo de bacterias',
+h1p:'Las bacterias (<i>E. coli</i>) llevan muchas generaciones en un medio con ¹⁵N (isótopo pesado): todo su ADN es «pesado». Después se pasan a un medio con ¹⁴N (ligero) y se dejan dividir.',
+gen:(g)=>`Generación actual: <b>G${fmtG(g)}</b> (${fmtG(g)} ${g===1?'duplicación':'duplicaciones'} en ¹⁴N)`,
+next:(st)=>st===1?'Esperar una generación en ¹⁴N':'Esperar media generación en ¹⁴N',maxed:'Máximo alcanzado (G4)',
+async:'Cultivo no sincronizado: tomar muestras cada media generación (como en el experimento original). Reinicia el experimento.',
+fl:['Medio ¹⁵N (pesado)','Medio ¹⁴N (ligero)','transferir'],
+h2:'2 · Muestreo y ultracentrífuga',
+h2p:'Se extrae el ADN, se mezcla con CsCl y se centrifuga a gran velocidad: el CsCl forma un gradiente de densidad y el ADN se sitúa donde su densidad coincide con la del medio. Una luz UV lo fotografía y un densitómetro mide la banda.',
+pf:['Extraer el ADN','Mezclar con CsCl','Ultracentrífuga','Foto UV y densitómetro'],
+heat:'Desnaturalizar con calor (separar las dos cadenas) antes de centrifugar',
+spin:(g)=>`Centrifugar muestra de G${fmtG(g)}`,
+ctrl15:'Control: ADN ¹⁵N (pesado)',ctrl14:'Control: ADN ¹⁴N (ligero)',ctrlMix:'Control: mezcla de ADN ¹⁵N + ADN ¹⁴N',
+ctrlS15:'Control: ADN ¹⁵N desnaturalizado (cadenas sueltas)',ctrlS14:'Control: ADN ¹⁴N desnaturalizado (cadenas sueltas)',
+ssNote:'Las cadenas sueltas (monocatenarias) son algo más densas que el ADN bicatenario: compara las muestras calentadas con los controles desnaturalizados.',
+native:'ADN nativo',heated:'ADN desnaturalizado',hyb:'híbrido',mc:'mc',
+bands:'Bandas medidas',rho:'g/mL',remove:'Quitar',
+spinning:'Centrifugando… la muestra se está colocando en el gradiente de CsCl.',
+wait:(s)=>`Espera ${s} s…`,
+stBtn:['Ver fotografía UV','Medir con el densitómetro','Mostrar lo que predice cada modelo','Comprobar compatibilidad'],
+stQ0i:'Mientras centrifuga: ¿cuántas bandas esperas y dónde? Haz clic en el tubo para marcarlas (otro clic sobre una marca la borra).',
+stQ0p:'Mientras centrifuga: recoge las propuestas de la clase y márcalas en el tubo (A, B, C…). Otro clic sobre una marca la borra.',
+stQ:['','¿Cuántas bandas ves y dónde están respecto a los controles? Compáralas con las marcas.','','Mira las predicciones: ¿cuál coincide con lo observado?'],
+needMark:'Marca al menos una banda en el tubo para continuar.',
+hypQ:'Tu hipótesis: ¿qué modelo crees que explica esta muestra?',hypJ:'Justifica tu elección en una frase:',needHyp:'Elige un modelo para continuar.',
+voteQ:'Votación de la clase: ¿qué modelo explica esta muestra?',
+votesRes:'La clase votó',compatTxt:'Modelos compatibles con lo observado',none:'ninguno',
+yourHyp:(m)=>`Tu hipótesis: <b>${m}</b>.`,fbOk:'Es compatible con lo observado.',
+fbNo:(p,o)=>`No es compatible: este modelo predice ${p}, pero se observa ${o}.`,
+alsoOk:(l)=>`Ojo: también es compatible ${l}; esta muestra sola no basta para decidir.`,
+onlyOk:'Además, es el único modelo compatible con esta muestra.',
+predOf:'Predicción',
+h3:'3 · Compara con los modelos',
+colSample:'Muestra',okTxt:'✓ compatible',noTxt:'✗ incompatible',state:'Estado del modelo',alive:'No refutado',dead:'Descartado',
+empty:'Aún no hay muestras analizadas. Completa el análisis de una muestra para ver aquí su compatibilidad.',
+h4:'4 · Conclusión',
+c0:'Todavía no puedes descartar ningún modelo. Pasa a ¹⁴N, espera una generación y centrifuga la muestra de G1.',
+cPair:(a,b)=>`Quedan dos modelos sin refutar: ${a} y ${b}. Elige una muestra que los distinga.`,
+hintSD:'Prueba la muestra de G2 (nativo) o la de G1 calentada.',hintSC:'Prueba la muestra de G1 (nativo).',hintCD:'Prueba la muestra de G1 (nativo).',
+killed:(s,m,p,o)=>`En «${s}» el modelo ${m} predice ${p}, pero se observa ${o}.`,
+win:{semi:'<b>Solo el modelo semiconservativo resiste todas las pruebas.</b> En G1 todo el ADN es híbrido (una cadena ¹⁵N + una cadena ¹⁴N), y en G2 aparecen a partes iguales ADN híbrido y ADN ligero. Cada molécula hija conserva una cadena de la madre y sintetiza una nueva: <b>la replicación del ADN es semiconservativa</b>.',
+cons:'Solo queda el modelo conservativo con esta realidad simulada (modo docente).',disp:'Solo queda el modelo dispersivo con esta realidad simulada (modo docente).'},
+caution:'Matiz científico: un modelo no se «demuestra»; sobrevive a las pruebas que podrían haberlo refutado. Aquí, además, las bandas se han simulado.',
+mdet:'Esquema molecular de cada modelo (ábrelo cuando hayas razonado la respuesta)',
+hm:'¿Qué hay dentro del tubo? Moléculas de ADN por generación',
+hmp:'Elige un modelo y observa cómo se reparten las cadenas pesadas (¹⁵N) y ligeras (¹⁴N) en cada generación.',
+heavy:'cadena ¹⁵N (pesada): gruesa y con borde',light:'cadena ¹⁴N (ligera): fina',
+teacher:'Modo docente: elegir la «realidad» que simula el laboratorio',
+teacherP:'Por defecto el laboratorio reproduce el resultado real de 1958 (semiconservativo). Si cambias la realidad, se borran las muestras.',
+h5:'5 · Resumen para el cuaderno',sumEmpty:'El resumen aparecerá cuando completes el análisis de alguna muestra.',
+colBands:'Bandas medidas',colHyp:'Tu hipótesis',colJ:'Justificación',colRes:'Compatible con',
+copy:'Copiar resumen',copied:'Copiado.',copyFail:'No se ha podido copiar automáticamente: el texto ha quedado seleccionado; usa Ctrl+C.',
+printTip:'También puedes imprimir esta página con Ctrl+P (solo se imprimen los resultados).',
+sumTitle:'Laboratorio Meselson y Stahl: resumen',
+h6:'6 · Ponte a prueba (tipo PAU)',quizLock:'Las preguntas se desbloquean cuando llegues a una conclusión en el apartado 4.',
+correct:'Correcto.',retry:'No es correcto. Vuelve a intentarlo.',hintL:'Pista',
+quiz:[
+{q:'Tras una generación en ¹⁴N (G1), las bacterias se devuelven a un medio con ¹⁵N y se replican una vez. ¿Qué bandas esperas en el ADN nativo?',opts:['100 % híbrido','50 % pesado (¹⁵N/¹⁵N) y 50 % híbrido','50 % híbrido y 50 % ligero','100 % pesado'],ok:1,
+hint:'Dibuja una molécula híbrida, separa sus cadenas y completa cada una con nucleótidos que llevan ¹⁵N.',
+fb:'Cada molécula híbrida separa sus cadenas: la cadena ¹⁵N se completa con una cadena nueva ¹⁵N (molécula pesada) y la cadena ¹⁴N con otra ¹⁵N (molécula híbrida).'},
+{q:'Si se desnaturaliza con calor el ADN de G2, ¿qué proporción de cadenas sueltas pesadas (¹⁵N) aparecerá?',opts:['0 %','25 %','50 %','75 %'],ok:1,
+hint:'Cuenta cuántas cadenas hay en total en G2 y cuántas son las originales.',
+fb:'En G2 hay 4 moléculas (8 cadenas). Solo las 2 cadenas parentales originales llevan ¹⁵N: 2/8 = 25 %. Las otras 6 son ligeras.'},
+{q:'Según el modelo semiconservativo, ¿qué bandas se observan en el ADN nativo de G3?',opts:['50 % híbrido y 50 % ligero','25 % híbrido y 75 % ligero','12,5 % híbrido y 87,5 % ligero','100 % ligero'],ok:1,
+hint:'Las dos cadenas parentales nunca desaparecen: ¿en cuántas de las moléculas de G3 están?',
+fb:'En G3 hay 8 moléculas y las 2 cadenas parentales siguen en 2 moléculas híbridas: 2/8 = 25 % híbrido y 6/8 = 75 % ligero.'},
+{q:'¿Por qué el resultado de G1 (una sola banda híbrida) no basta para afirmar que la replicación es semiconservativa?',opts:['Porque en G1 todavía no se ha replicado el ADN','Porque el modelo dispersivo también predice una única banda de densidad intermedia','Porque el modelo conservativo también da una banda intermedia','Porque el CsCl no separa bien en la primera generación'],ok:1,
+hint:'Repasa qué predice cada modelo para G1.',
+fb:'G1 descarta el modelo conservativo (daría dos bandas, pesada y ligera), pero el dispersivo también da una única banda intermedia. Hace falta G2 o la desnaturalización para distinguirlos.'},
+{q:'¿Qué función cumple el cloruro de cesio (CsCl) en el experimento?',opts:['Marca radiactivamente el ADN','Forma, al centrifugar, un gradiente de densidad en el que cada molécula de ADN se sitúa según su densidad','Rompe los puentes de hidrógeno entre las dos cadenas','Sirve de fuente de nitrógeno para las bacterias'],ok:1,
+hint:'Piensa en qué separa la ultracentrífuga.',
+fb:'A gran velocidad, el CsCl forma un gradiente de densidad; el ADN se detiene donde su densidad coincide con la del medio (equilibrio de sedimentación).'}],
+ariaEmpty:'Tubo todavía sin resultados',
+ariaN:(n)=>`${n} ${n===1?'banda':'bandas'}`,
+pos:{L:'a la altura del control ligero',H:'a la altura del control pesado',mid:'entre los dos controles',out:'fuera de los controles'},
+sim:'<b>Simplificaciones:</b> generaciones sincronizadas (salvo en el cultivo no sincronizado del modo proyector), densidades y anchuras de banda esquemáticas (las cadenas sueltas se sitúan unos 0,015 g/mL por encima del ADN bicatenario) y ruido de medida simulado. La esencia (posición y proporción de las bandas) sigue el experimento original.',
+src:'Fuentes'
+},
+va:{
+title:"Laboratori virtual: l'experiment de Meselson i Stahl",
+sub:"Com es copia l'ADN? Simula el cultiu, la centrifugació en gradient de densitat i comprova quin model resisteix.",
+modeQ:'Com faràs servir el laboratori?',
+modes:{proj:{t:'Projectar a classe',d:"Per a la pissarra digital: lletra gran, marques i votació de la classe, ritme marcat pel docent, cultiu no sincronitzat i opció de canviar la «realitat» simulada."},
+ind:{t:'Treball individual',d:"Per a cada alumne: predicció pròpia en el tub, hipòtesi escrita, progrés guardat al navegador, resum per al quadern i preguntes tipus PAU."}},
+modeNow:'Mode',change:'Canviar mode',reset:'Començar de nou',
+names:{semi:'Semiconservatiu',cons:'Conservatiu',disp:'Dispersiu'},
+desc:{semi:'Cada molècula filla conserva una cadena parental i sintetitza una cadena nova.',cons:'La molècula original es conserva intacta i se sintetitza una molècula filla totalment nova.',disp:'Les cadenes filles són mosaics: trams parentals i trams nous barrejats.'},
+h0:"Tres hipòtesis sobre la replicació de l'ADN (1957)",
+h0p:"El 1958 els tres models eren possibles. L'experiment ha de produir un resultat que en contradiga almenys un.",
+h1:'1 · Cultiu de bacteris',
+h1p:"Els bacteris (<i>E. coli</i>) porten moltes generacions en un medi amb ¹⁵N (isòtop pesat): tot el seu ADN és «pesat». Després es passen a un medi amb ¹⁴N (lleuger) i es deixen dividir.",
+gen:(g)=>`Generació actual: <b>G${fmtG(g)}</b> (${fmtG(g)} ${g===1?'duplicació':'duplicacions'} en ¹⁴N)`,
+next:(st)=>st===1?'Esperar una generació en ¹⁴N':'Esperar mitja generació en ¹⁴N',maxed:'Màxim assolit (G4)',
+async:"Cultiu no sincronitzat: prendre mostres cada mitja generació (com en l'experiment original). Reinicia l'experiment.",
+fl:['Medi ¹⁵N (pesat)','Medi ¹⁴N (lleuger)','transferir'],
+h2:'2 · Mostreig i ultracentrífuga',
+h2p:"S'extrau l'ADN, es barreja amb CsCl i es centrifuga a gran velocitat: el CsCl forma un gradient de densitat i l'ADN se situa on la seua densitat coincideix amb la del medi. Una llum UV el fotografia i un densitòmetre mesura la banda.",
+pf:["Extraure l'ADN",'Barrejar amb CsCl','Ultracentrífuga','Foto UV i densitòmetre'],
+heat:'Desnaturalitzar amb calor (separar les dues cadenes) abans de centrifugar',
+spin:(g)=>`Centrifugar mostra de G${fmtG(g)}`,
+ctrl15:'Control: ADN ¹⁵N (pesat)',ctrl14:'Control: ADN ¹⁴N (lleuger)',ctrlMix:'Control: mescla de ADN ¹⁵N + ADN ¹⁴N',
+ctrlS15:'Control: ADN ¹⁵N desnaturalitzat (cadenes soltes)',ctrlS14:'Control: ADN ¹⁴N desnaturalitzat (cadenes soltes)',
+ssNote:"Les cadenes soltes (monocatenàries) són una mica més denses que l'ADN bicatenari: compara les mostres escalfades amb els controls desnaturalitzats.",
+native:'ADN natiu',heated:'ADN desnaturalitzat',hyb:'híbrid',mc:'mc',
+bands:'Bandes mesurades',rho:'g/mL',remove:'Llevar',
+spinning:"Centrifugant… la mostra s'està col·locant en el gradient de CsCl.",
+wait:(s)=>`Espera ${s} s…`,
+stBtn:['Veure fotografia UV','Mesurar amb el densitòmetre','Mostrar el que prediu cada model','Comprovar compatibilitat'],
+stQ0i:'Mentre centrifuga: quantes bandes esperes i on? Fes clic en el tub per a marcar-les (un altre clic sobre una marca l\'esborra).',
+stQ0p:"Mentre centrifuga: arreplega les propostes de la classe i marca-les en el tub (A, B, C…). Un altre clic sobre una marca l'esborra.",
+stQ:['','Quantes bandes veus i on estan respecte als controls? Compara-les amb les marques.','','Mira les prediccions: quina coincideix amb el que has observat?'],
+needMark:'Marca almenys una banda en el tub per a continuar.',
+hypQ:'La teua hipòtesi: quin model creus que explica aquesta mostra?',hypJ:'Justifica la teua elecció en una frase:',needHyp:'Tria un model per a continuar.',
+voteQ:'Votació de la classe: quin model explica aquesta mostra?',
+votesRes:'La classe va votar',compatTxt:'Models compatibles amb el que s\'ha observat',none:'cap',
+yourHyp:(m)=>`La teua hipòtesi: <b>${m}</b>.`,fbOk:"És compatible amb el que s'ha observat.",
+fbNo:(p,o)=>`No és compatible: aquest model prediu ${p}, però s'observa ${o}.`,
+alsoOk:(l)=>`Compte: també és compatible ${l}; aquesta mostra sola no és suficient per a decidir.`,
+onlyOk:'A més, és l\'únic model compatible amb aquesta mostra.',
+predOf:'Predicció',
+h3:'3 · Compara amb els models',
+colSample:'Mostra',okTxt:'✓ compatible',noTxt:'✗ incompatible',state:'Estat del model',alive:'No refutat',dead:'Descartat',
+empty:"Encara no hi ha mostres analitzades. Completa l'anàlisi d'una mostra per a veure ací la compatibilitat.",
+h4:'4 · Conclusió',
+c0:'Encara no pots descartar cap model. Passa a ¹⁴N, espera una generació i centrifuga la mostra de G1.',
+cPair:(a,b)=>`Queden dos models sense refutar: ${a} i ${b}. Tria una mostra que els distingisca.`,
+hintSD:'Prova la mostra de G2 (natiu) o la de G1 escalfada.',hintSC:'Prova la mostra de G1 (natiu).',hintCD:'Prova la mostra de G1 (natiu).',
+killed:(s,m,p,o)=>`En «${s}» el model ${m} prediu ${p}, però s'observa ${o}.`,
+win:{semi:"<b>Només el model semiconservatiu resisteix totes les proves.</b> En G1 tot l'ADN és híbrid (una cadena ¹⁵N + una cadena ¹⁴N), i en G2 apareixen a parts iguals ADN híbrid i ADN lleuger. Cada molècula filla conserva una cadena de la mare i sintetitza una de nova: <b>la replicació de l'ADN és semiconservativa</b>.",
+cons:'Només queda el model conservatiu amb aquesta realitat simulada (mode docent).',disp:'Només queda el model dispersiu amb aquesta realitat simulada (mode docent).'},
+caution:"Matís científic: un model no es «demostra»; sobreviu a les proves que podrien haver-lo refutat. Ací, a més, les bandes s'han simulat.",
+mdet:"Esquema molecular de cada model (obri'l quan hages raonat la resposta)",
+hm:"Què hi ha dins del tub? Molècules d'ADN per generació",
+hmp:'Tria un model i observa com es reparteixen les cadenes pesades (¹⁵N) i lleugeres (¹⁴N) en cada generació.',
+heavy:'cadena ¹⁵N (pesada): grossa i amb vora',light:'cadena ¹⁴N (lleugera): fina',
+teacher:'Mode docent: triar la «realitat» que simula el laboratori',
+teacherP:'Per defecte el laboratori reprodueix el resultat real de 1958 (semiconservatiu). Si canvies la realitat, s\'esborren les mostres.',
+h5:'5 · Resum per al quadern',sumEmpty:"El resum apareixerà quan completes l'anàlisi d'alguna mostra.",
+colBands:'Bandes mesurades',colHyp:'La teua hipòtesi',colJ:'Justificació',colRes:'Compatible amb',
+copy:'Copiar resum',copied:'Copiat.',copyFail:'No s\'ha pogut copiar automàticament: el text ha quedat seleccionat; usa Ctrl+C.',
+printTip:'També pots imprimir aquesta pàgina amb Ctrl+P (només s\'imprimeixen els resultats).',
+sumTitle:'Laboratori Meselson i Stahl: resum',
+h6:'6 · Posa\'t a prova (tipus PAU)',quizLock:'Les preguntes es desbloquegen quan arribes a una conclusió en l\'apartat 4.',
+correct:'Correcte.',retry:'No és correcte. Torna-ho a intentar.',hintL:'Pista',
+quiz:[
+{q:'Després d\'una generació en ¹⁴N (G1), els bacteris es tornen a un medi amb ¹⁵N i es repliquen una vegada. Quines bandes esperes en l\'ADN natiu?',opts:['100 % híbrid','50 % pesat (¹⁵N/¹⁵N) i 50 % híbrid','50 % híbrid i 50 % lleuger','100 % pesat'],ok:1,
+hint:'Dibuixa una molècula híbrida, separa les seues cadenes i completa cadascuna amb nucleòtids que porten ¹⁵N.',
+fb:'Cada molècula híbrida separa les cadenes: la cadena ¹⁵N es completa amb una cadena nova ¹⁵N (molècula pesada) i la cadena ¹⁴N amb una altra ¹⁵N (molècula híbrida).'},
+{q:'Si es desnaturalitza amb calor l\'ADN de G2, quina proporció de cadenes soltes pesades (¹⁵N) apareixerà?',opts:['0 %','25 %','50 %','75 %'],ok:1,
+hint:'Compta quantes cadenes hi ha en total en G2 i quantes són les originals.',
+fb:'En G2 hi ha 4 molècules (8 cadenes). Només les 2 cadenes parentals originals porten ¹⁵N: 2/8 = 25 %. Les altres 6 són lleugeres.'},
+{q:'Segons el model semiconservatiu, quines bandes s\'observen en l\'ADN natiu de G3?',opts:['50 % híbrid i 50 % lleuger','25 % híbrid i 75 % lleuger','12,5 % híbrid i 87,5 % lleuger','100 % lleuger'],ok:1,
+hint:'Les dues cadenes parentals no desapareixen mai: en quantes de les molècules de G3 estan?',
+fb:'En G3 hi ha 8 molècules i les 2 cadenes parentals continuen en 2 molècules híbrides: 2/8 = 25 % híbrid i 6/8 = 75 % lleuger.'},
+{q:'Per què el resultat de G1 (una sola banda híbrida) no és suficient per a afirmar que la replicació és semiconservativa?',opts:['Perquè en G1 encara no s\'ha replicat l\'ADN','Perquè el model dispersiu també prediu una única banda de densitat intermèdia','Perquè el model conservatiu també dona una banda intermèdia','Perquè el CsCl no separa bé en la primera generació'],ok:1,
+hint:'Repassa què prediu cada model per a G1.',
+fb:'G1 descarta el model conservatiu (donaria dues bandes, pesada i lleugera), però el dispersiu també dona una única banda intermèdia. Cal G2 o la desnaturalització per a distingir-los.'},
+{q:'Quina funció té el clorur de cesi (CsCl) en l\'experiment?',opts:['Marca radioactivament l\'ADN','Forma, en centrifugar, un gradient de densitat en què cada molècula d\'ADN se situa segons la seua densitat','Trenca els ponts d\'hidrogen entre les dues cadenes','Serveix de font de nitrogen per als bacteris'],ok:1,
+hint:'Pensa què separa la ultracentrífuga.',
+fb:'A gran velocitat, el CsCl forma un gradient de densitat; l\'ADN s\'atura on la seua densitat coincideix amb la del medi (equilibri de sedimentació).'}],
+ariaEmpty:'Tub encara sense resultats',
+ariaN:(n)=>`${n} ${n===1?'banda':'bandes'}`,
+pos:{L:'a l\'altura del control lleuger',H:'a l\'altura del control pesat',mid:'entre els dos controls',out:'fora dels controls'},
+sim:"<b>Simplificacions:</b> generacions sincronitzades (excepte en el cultiu no sincronitzat del mode projector), densitats i amplades de banda esquemàtiques (les cadenes soltes se situen uns 0,015 g/mL per damunt de l'ADN bicatenari) i soroll de mesura simulat. L'essència (posició i proporció de les bandes) segueix l'experiment original.",
+src:'Fonts'
+}};
+
+const WAIT=6000,KEY='ms-lab-ind-v1',LKEY='ms-lab-lang';
+const S={lang:'es',mode:null,world:'semi',gen:0,async:false,samples:[],heat:false,mol:'semi',mOpen:false,tOpen:false,quiz:{},openDone:{}};
+try{const l=localStorage.getItem(LKEY);if(l==='es'||l==='va')S.lang=l;}catch(e){}
+const T=()=>I18N[S.lang];
+const P=()=>S.mode==='proj';
+const fmtG=(g)=>String(g).replace('.',',');
+const fmt=(x)=>x.toFixed(3).replace('.',',');
+const pct=(w)=>Math.round(w*100)+' %';
+const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const descBands=(b)=>b.slice().sort((a,c)=>c.rho-a.rho).map(x=>`${fmt(x.rho)} (${pct(x.w)})`).join(' + ');
+const rev=()=>S.samples.filter(x=>x.stage>=4);
+const sLabel=(s)=>`G${fmtG(s.gen)} · ${s.heated?T().heated:T().native}`;
+const sKey=(s)=>s.gen+'-'+(s.heated?1:0);
+const compat=(s)=>MODELS.filter(m=>matches(predict(m,s.gen,s.heated),observe(S.world,s.gen,s.heated)));
+const joinY=(arr)=>arr.length<2?arr.join(''):arr.slice(0,-1).join(', ')+(S.lang==='va'?' i ':' y ')+arr[arr.length-1];
+
+function save(){if(S.mode!=='ind')return;try{localStorage.setItem(KEY,JSON.stringify({gen:S.gen,samples:S.samples,heat:S.heat,quiz:S.quiz}));}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&Array.isArray(d.samples)){S.gen=d.gen||0;S.samples=d.samples;S.heat=!!d.heat;S.quiz=d.quiz||{};}}catch(e){}}
+function resetExp(){S.gen=0;S.samples=[];S.heat=false;S.quiz={};S.openDone={};}
+
+function describe(bands,heated,nums){
+  const t=T(),R=heated?SS:RHO;
+  const items=bands.filter(b=>b.w>=0.03).sort((a,c)=>c.rho-a.rho).map(b=>{
+    let p=Math.abs(b.rho-R.L)<0.0015?'L':Math.abs(b.rho-R.H)<0.0015?'H':(b.rho>R.L&&b.rho<R.H)?'mid':'out';
+    return t.pos[p]+(nums?` (${fmt(b.rho)} ${t.rho}, ${pct(b.w)})`:'');});
+  return t.ariaN(items.length)+': '+items.join('; ');
+}
+
+function draw(cv,o){
+  const proj=P(),dpr=window.devicePixelRatio||1,W=cv.clientWidth||600,kind=o.kind;
+  const H=kind==='strip'?(proj?96:66):kind==='mini'?(proj?80:58):(proj?190:136);
+  const fs=proj?20:14;
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.height=H+'px';
+  const c=cv.getContext('2d');c.scale(dpr,dpr);
+  const pad=10,X=(r)=>pad+(r-RMIN)/(RMAX-RMIN)*(W-2*pad),R=(x)=>RMIN+(x-pad)/(W-2*pad)*(RMAX-RMIN);
+  const sh=kind==='mini'?(proj?34:26):(proj?54:42),s=0.00085,bands=o.bands||[],rnd=mulberry32(Math.round(W)+bands.length*7+(o.heated?3:0));
+  c.fillStyle='#0b1220';c.fillRect(0,0,W,sh);
+  const val=(r)=>bands.reduce((a,b)=>a+b.w*Math.exp(-Math.pow(r-b.rho,2)/(2*s*s)),0);
+  for(let x=0;x<W;x++){const v=Math.min(1,Math.sqrt(val(R(x)))+rnd()*0.03);c.fillStyle=`rgba(190,225,255,${v.toFixed(3)})`;c.fillRect(x,0,1,sh);}
+  c.fillStyle='#fff';c.fillRect(0,sh,W,H-sh);
+  const t=T(),refs=o.heated?[[SS.L,`¹⁴N ${t.mc} 1,725`,'¹⁴N '+t.mc],[SS.H,`¹⁵N ${t.mc} 1,739`,'¹⁵N '+t.mc]]
+    :[[RHO.L,'¹⁴N 1,710','¹⁴N'],[RHO.M,t.hyb+' 1,717',''],[RHO.H,'¹⁵N 1,724','¹⁵N']];
+  const base=kind==='strip'?sh+10:H-(kind==='mini'?4:fs+8),top=sh+6;
+  c.strokeStyle='#C9C3B3';c.setLineDash([4,4]);c.lineWidth=1;
+  refs.forEach(([r])=>{c.beginPath();c.moveTo(X(r),0);c.lineTo(X(r),base);c.stroke();});
+  c.setLineDash([]);
+  c.fillStyle='#1F2A37';c.font=`${fs}px "Atkinson Hyperlegible",Arial,sans-serif`;c.textAlign='center';
+  if(kind==='strip'){refs.forEach(([r,,l])=>{if(l)c.fillText(l,X(r),H-6);});}
+  else{
+    c.beginPath();c.moveTo(pad,base);
+    for(let x=pad;x<=W-pad;x++){const v=Math.min(1,val(R(x))+(rnd()-.5)*0.012);c.lineTo(x,base-Math.max(0,v)*(base-top));}
+    c.lineTo(W-pad,base);c.closePath();c.fillStyle='rgba(15,118,110,.25)';c.fill();
+    c.strokeStyle='#1F2A37';c.lineWidth=1.6;c.stroke();
+    if(kind==='full'){c.fillStyle='#1F2A37';refs.forEach(([r,l])=>c.fillText(l,X(r),H-5));}
+  }
+  (o.marks||[]).forEach((m,k)=>{
+    const x=X(m);c.strokeStyle='#F97316';c.lineWidth=2.5;c.setLineDash([5,4]);
+    c.beginPath();c.moveTo(x,0);c.lineTo(x,kind==='strip'?sh:base);c.stroke();c.setLineDash([]);
+    c.fillStyle='#F97316';c.beginPath();c.moveTo(x,sh+1);c.lineTo(x-7,sh+12);c.lineTo(x+7,sh+12);c.closePath();c.fill();
+    if(proj){c.font=`bold ${fs+2}px "Atkinson Hyperlegible",Arial,sans-serif`;c.fillStyle='#FDBA74';c.fillText('ABCDEFGH'[k],x+(x>W-30?-14:14),fs+4);}
+  });
+}
+
+const IC={
+cent:()=>`<circle cx="60" cy="45" r="40" fill="#fff" stroke="#1F2A37" stroke-width="2.5"/><g><rect x="20" y="41" width="80" height="8" rx="4" fill="#1F2A37"/><circle cx="22" cy="45" r="7" fill="#C2410C"/><circle cx="98" cy="45" r="7" fill="#C2410C"/><animateTransform attributeName="transform" type="rotate" from="0 60 45" to="360 60 45" dur="3s" repeatCount="indefinite"/></g><circle cx="60" cy="45" r="4" fill="#fff"/>`,
+tube:()=>`<rect x="45" y="8" width="30" height="72" rx="14" fill="#fff" stroke="#1F2A37" stroke-width="2.5"/><path d="M52 38 q4-8 8 0 t8 0" stroke="#C2410C" stroke-width="3" fill="none"/><path d="M52 50 q4-8 8 0 t8 0" stroke="#0F766E" stroke-width="3" fill="none"/>`,
+cscl:()=>`<rect x="45" y="8" width="30" height="72" rx="14" fill="#fff" stroke="#1F2A37" stroke-width="2.5"/><rect x="48" y="36" width="24" height="41" rx="11" fill="#CFE8E4"/><path d="M92 4 v26" stroke="#1F2A37" stroke-width="4"/><path d="M92 36 q-6 9 0 13 q6-4 0-13z" fill="#0F766E"/>`,
+cam:()=>`<rect x="20" y="14" width="64" height="38" rx="6" fill="#1F2A37"/><circle cx="52" cy="33" r="13" fill="#6D28D9"/><circle cx="52" cy="33" r="6" fill="#C4B5FD"/><path d="M52 52 L58 74 M52 52 L68 74" stroke="#6D28D9" stroke-width="2" stroke-dasharray="3 3"/><rect x="12" y="74" width="96" height="14" fill="#0b1220"/><rect x="58" y="74" width="10" height="14" fill="#BEE1FF"/>`,
+dens:()=>`<rect x="10" y="8" width="100" height="16" fill="#0b1220"/><rect x="62" y="8" width="8" height="16" fill="#BEE1FF"/><line x1="50" y1="2" x2="50" y2="32" stroke="#C2410C" stroke-width="2.5"/><path d="M10 88 H50 Q58 88 62 62 Q66 36 70 62 Q74 88 82 88 H110" stroke="#1F2A37" stroke-width="2" fill="rgba(15,118,110,.25)"/>`
+};
+function procSVG(t){
+  let o='';['tube','cscl','cent','cam'].forEach((k,i)=>{const x=10+i*215;
+    o+=`<g transform="translate(${x+40},4)">${IC[k]()}</g><text x="${x+100}" y="122" text-anchor="middle" font-size="16" fill="#1F2A37" font-family="inherit">${i+1}. ${t.pf[i]}</text>`;
+    if(i<3)o+=`<path d="M${x+170} 50 h28 m-7 -6 l7 6 l-7 6" stroke="#55606E" stroke-width="2.5" fill="none"/>`;});
+  return `<svg viewBox="0 0 880 134" width="100%" role="img" aria-label="${t.pf.join(' → ')}">${o}</svg>`;
+}
+function flaskSVG(t,g){
+  const fl=(cx,col,fillc,seed)=>{
+    const hw=(y)=>18+(y-45)*(42/75);let dots='';const r=mulberry32(seed);
+    for(let i=0;i<14;i++){const y=88+r()*28,w=hw(y)-8,dx=(cx+(r()*2-1)*w).toFixed(1);dots+=`<ellipse cx="${dx}" cy="${y.toFixed(1)}" rx="3.4" ry="1.7" fill="${col}" transform="rotate(${Math.round(r()*180)} ${dx} ${y.toFixed(1)})"/>`;}
+    return `<polygon points="${cx-18},10 ${cx+18},10 ${cx+18},45 ${cx+60},120 ${cx-60},120 ${cx-18},45" fill="#fff" stroke="#1F2A37" stroke-width="2.5" stroke-linejoin="round"/><polygon points="${cx-hw(80)},80 ${cx+hw(80)},80 ${cx+60},120 ${cx-60},120" fill="${fillc}" opacity=".85"/>${dots}`;};
+  return `<svg viewBox="0 0 560 160" width="100%" style="max-width:${P()?760:560}px" role="img" aria-label="${t.fl[0]} → ${t.fl[1]}">
+  ${fl(90,'#7C2D12','#FDBA74',3)}<text x="90" y="145" text-anchor="middle" font-size="16" fill="#1F2A37" font-family="inherit">${t.fl[0]}</text>
+  <path d="M170 70 h90 m-9 -7 l9 7 l-9 7" stroke="#55606E" stroke-width="2.5" fill="none"/><text x="215" y="58" text-anchor="middle" font-size="15" fill="#55606E" font-family="inherit">${t.fl[2]}</text>
+  ${fl(350,'#134E4A','#5EEAD4',9)}<text x="350" y="145" text-anchor="middle" font-size="16" fill="#1F2A37" font-family="inherit">${t.fl[1]}</text>
+  <text x="450" y="80" font-size="30" font-weight="700" fill="#C2410C" font-family="inherit">G${fmtG(g)}</text></svg>`;
+}
+function molSVG(model,g){
+  const mols=molecules(model,g),w=16*3.6,h=14,gap=5;let y=0,out='';
+  mols.forEach(m=>{m.forEach((st,si)=>{st.forEach((c,i)=>{
+    const x=(i*3.6).toFixed(1),y0=y+(si?8:1);
+    out+=c==='H'?`<rect x="${x}" y="${y0}" width="3.3" height="5" fill="#C2410C" stroke="#1F2A37" stroke-width=".7"/>`
+      :`<rect x="${x}" y="${(y0+1.3).toFixed(1)}" width="3.3" height="2.4" fill="#0F766E"/>`;});});y+=h+gap;});
+  return `<svg width="${w.toFixed(0)}" height="${y}" viewBox="0 0 ${w.toFixed(0)} ${y}" role="img" aria-label="G${g}">${out}</svg>`;
+}
+
+function conclusion(){
+  const t=T(),alive=aliveModels(rev(),S.world),dead=MODELS.filter(m=>!alive.includes(m));
+  let h='',cls='concl';
+  const reasons=dead.map(m=>{
+    const s=rev().find(s=>!matches(predict(m,s.gen,s.heated),observe(S.world,s.gen,s.heated)));
+    return '<li>'+t.killed(sLabel(s),t.names[m],descBands(predict(m,s.gen,s.heated)),descBands(observe(S.world,s.gen,s.heated)))+'</li>';
+  }).join('');
+  if(!dead.length) h='<p>'+t.c0+'</p>';
+  else if(alive.length===1){cls+=' win';h='<ul>'+reasons+'</ul><p>'+t.win[alive[0]]+'</p><p class="note">'+t.caution+'</p>';}
+  else if(alive.length===2){
+    const k=alive.slice().sort().join('');
+    h='<ul>'+reasons+'</ul><p>'+t.cPair(t.names[alive[0]],t.names[alive[1]])+' '+(k==='dispsemi'?t.hintSD:k==='conssemi'?t.hintSC:t.hintCD)+'</p>';
+  }else h='<ul>'+reasons+'</ul>';
+  return `<div class="${cls}" role="status" aria-live="polite">${h}</div>`;
+}
+
+function waitLeft(s){return S.mode==='ind'&&s.stage===0?Math.max(0,Math.ceil((WAIT-(Date.now()-s.t0))/1000)):0;}
+function gate(s){
+  const t=T();if(P())return {dis:false,msg:''};
+  if(s.stage===0){const r=waitLeft(s);if(r>0)return {dis:true,msg:t.wait(r)};if(!s.marks.length)return {dis:true,msg:t.needMark};}
+  if(s.stage===2&&!s.hyp)return {dis:true,msg:t.needHyp};
+  return {dis:false,msg:''};
+}
+
+function sampleHTML(s,i){
+  const t=T(),ob=observe(S.world,s.gen,s.heated);
+  let x=`<div class="row"><span class="lab">${sLabel(s)}</span><button class="btn alt" data-rm="${i}" id="rm${i}">${t.remove}</button></div>`;
+  if(s.stage===0)x+=`<p class="note">${t.spinning}</p><canvas class="mk" data-c="${i}" data-kind="strip0" role="img" aria-label="${t.ariaEmpty}"></canvas>`;
+  else x+=`<canvas data-c="${i}" data-kind="${s.stage===1?'strip':'full'}" role="img" aria-label="${esc(describe(ob,s.heated,s.stage>=2))}"></canvas>`;
+  if(s.stage>=2)x+=`<div class="read">${t.bands}: ${descBands(ob)} ${t.rho}</div>`;
+  if(s.stage===2){
+    if(P())x+=`<div class="votes"><p><b>${t.voteQ}</b></p><div class="row">`+MODELS.map(m=>`<div class="vote"><span>${t.names[m]}</span><button class="btn alt" id="v${i}${m}m" data-vote="${i}|${m}|-1" aria-label="− ${t.names[m]}">−</button><span class="n">${s.votes[m]}</span><button class="btn alt" id="v${i}${m}p" data-vote="${i}|${m}|1" aria-label="+ ${t.names[m]}">+</button></div>`).join('')+`</div></div>`;
+    else x+=`<div class="hyp"><p><b>${t.hypQ}</b></p><div class="row">`+MODELS.map(m=>`<label><input type="radio" name="hyp${i}" id="h${i}${m}" data-i="${i}" value="${m}" ${s.hyp===m?'checked':''}> ${t.names[m]}</label>`).join(' &nbsp; ')+
+      `</div><label for="j${i}">${t.hypJ}</label><textarea id="j${i}" data-j="${i}">${esc(s.just||'')}</textarea></div>`;
+  }
+  if(s.stage>=3)x+=`<div class="preds">`+MODELS.map(m=>{const ok=matches(predict(m,s.gen,s.heated),ob);
+    return `<div><b>${t.predOf}: ${t.names[m]}</b> ${s.stage>=4?`<span class="${ok?'ok':'no'}">${ok?t.okTxt:t.noTxt}</span>`:''}<canvas data-p="${i}|${m}" role="img" aria-label="${esc(t.predOf+' '+t.names[m]+': '+describe(predict(m,s.gen,s.heated),s.heated,true))}"></canvas></div>`;}).join('')+`</div>`;
+  if(s.stage>=4){
+    const cm=compat(s);
+    if(P()){
+      x+=`<div class="fb fbok">${t.votesRes}: ${MODELS.map(m=>`${t.names[m]} ${s.votes[m]}`).join(' · ')}.<br>${t.compatTxt}: <b>${cm.length?joinY(cm.map(m=>t.names[m])):t.none}</b>.</div>`;
+    }else if(s.hyp){
+      const ok=cm.includes(s.hyp),others=cm.filter(m=>m!==s.hyp).map(m=>t.names[m]);
+      x+=`<div class="fb ${ok?'fbok':'fbno'}">${t.yourHyp(t.names[s.hyp])} ${s.just?`<i>«${esc(s.just)}»</i> `:''}<br>`+
+        (ok?t.fbOk+' '+(others.length?t.alsoOk(joinY(others)):t.onlyOk):t.fbNo(descBands(predict(s.hyp,s.gen,s.heated)),descBands(ob)))+`</div>`;
+    }
+  }
+  if(s.stage<4){
+    const ic=['cent','dens'][s.stage],g=gate(s);
+    const q=s.stage===0?(P()?t.stQ0p:t.stQ0i):t.stQ[s.stage];
+    x+=`<div class="row">${ic?`<svg viewBox="0 0 120 92" width="${P()?140:110}" height="${P()?107:84}" aria-hidden="true">${IC[ic]()}</svg>`:''}<div>${q?`<p class="note" style="margin:0 0 8px">${q}</p>`:''}<button class="btn" data-adv="${i}" id="adv${i}" ${g.dis?'disabled':''}>${t.stBtn[s.stage]}</button> <span class="note" id="cd${i}" aria-live="polite">${g.msg}</span></div></div>`;
+  }
+  if(P()&&s.stage>=4){const k=sKey(s);
+    return `<details class="samp" data-k="${k}" ${S.openDone[k]?'open':''}><summary>${sLabel(s)} · ${descBands(ob)} ${t.rho}</summary>${x}</details>`;}
+  return `<div class="samp">${x}</div>`;
+}
+
+function summaryText(){
+  const t=T();
+  const lines=rev().map(s=>{const cm=compat(s);
+    return `${sLabel(s)} | ${t.colBands}: ${descBands(observe(S.world,s.gen,s.heated))} ${t.rho} | ${t.colHyp}: ${s.hyp?t.names[s.hyp]:'—'}${s.just?' («'+s.just+'»)':''} | ${t.colRes}: ${cm.length?cm.map(m=>t.names[m]).join(', '):t.none}`;});
+  const tmp=document.createElement('div');tmp.innerHTML=conclusion();
+  return t.sumTitle+'\n\n'+lines.join('\n')+'\n\n'+t.h4+': '+tmp.textContent.replace(/\s+/g,' ').trim();
+}
+
+function render(){
+  const t=T(),app=document.getElementById('app'),ae=document.activeElement,act=ae&&ae.id,sel=ae&&ae.tagName==='TEXTAREA'?[ae.selectionStart,ae.selectionEnd]:null;
+  document.documentElement.lang=S.lang==='va'?'ca':'es';
+  document.body.classList.toggle('proj',P());
+  let h=`<header><div><h1>${t.title}</h1><p class="sub">${t.sub}</p></div>
+  <div class="lang" role="group" aria-label="Idioma"><button id="l-es" class="${S.lang==='es'?'on':''}" data-lang="es">Castellano</button><button id="l-va" class="${S.lang==='va'?'on':''}" data-lang="va">Valencià</button></div></header>`;
+  if(!S.mode){
+    h+=`<section class="card"><h2>${t.modeQ}</h2><div class="modepick">`+['proj','ind'].map(m=>`<button class="modecard" id="mode-${m}" data-mode="${m}"><b>${t.modes[m].t}</b>${t.modes[m].d}</button>`).join('')+`</div></section>`;
+    h+=footer(t);app.innerHTML=h;if(act){const e=document.getElementById(act);if(e)e.focus();}return;
+  }
+  h+=`<div class="row modebar"><span>${t.modeNow}: <b>${t.modes[S.mode].t}</b></span><button class="btn alt" id="chmode">${t.change}</button><button class="btn alt" id="reset">${t.reset}</button></div>`;
+  const alive=aliveModels(rev(),S.world);
+  const refs=[{id:'r15',label:t.ctrl15,bands:[{rho:RHO.H,w:1}]},{id:'r14',label:t.ctrl14,bands:[{rho:RHO.L,w:1}]},{id:'rmix',label:t.ctrlMix,bands:[{rho:RHO.H,w:.5},{rho:RHO.L,w:.5}]}];
+  const anyHeat=S.heat||S.samples.some(s=>s.heated);
+  if(anyHeat)refs.push({id:'s15',label:t.ctrlS15,bands:[{rho:SS.H,w:1}],heated:true},{id:'s14',label:t.ctrlS14,bands:[{rho:SS.L,w:1}],heated:true});
+  h+=`<section class="card"><h2>${t.h0}</h2><p>${t.h0p}</p><div class="models">`+MODELS.map(m=>`<div class="model"><h3>${t.names[m]}</h3><p>${t.desc[m]}</p></div>`).join('')+`</div></section>`;
+  const step=S.async?0.5:1;
+  h+=`<section class="card"><h2>${t.h1}</h2><p>${t.h1p}</p>`+
+    (P()?`<div class="row"><label><input type="checkbox" id="async" ${S.async?'checked':''}> ${t.async}</label></div>`:'')+
+    `<div class="row"><div class="dots" aria-hidden="true">`+[0,1,2,3,4].map(g=>`<div class="dot ${g<=S.gen?'on':''} ${g===Math.floor(S.gen)?'cur':''}">G${g}</div>`).join('')+`</div><div>${t.gen(S.gen)}</div></div>
+    <div>${flaskSVG(t,S.gen)}</div><button class="btn" id="next" ${S.gen>=4?'disabled':''}>${S.gen>=4?t.maxed:t.next(step)}</button></section>`;
+  h+=`<section class="card"><h2>${t.h2}</h2><p>${t.h2p}</p>${procSVG(t)}
+    <div class="row"><label><input type="checkbox" id="heat" ${S.heat?'checked':''}> ${t.heat}</label></div>
+    <div class="row"><button class="btn" id="spin">${t.spin(S.gen)}${S.heat?' · '+t.heated:''}</button></div>`+
+    (anyHeat?`<p class="note">${t.ssNote}</p>`:'')+
+    refs.map(r=>`<div class="samp"><div class="lab">${r.label}</div><canvas data-ref="${r.id}" role="img" aria-label="${esc(r.label)}"></canvas></div>`).join('')+
+    S.samples.map(sampleHTML).join('')+`</section>`;
+  h+=`<section class="card"><h2>${t.h3}</h2>`;
+  if(!rev().length)h+=`<p>${t.empty}</p>`;
+  else h+=`<table><tr><th>${t.colSample}</th>${MODELS.map(m=>`<th>${t.names[m]}</th>`).join('')}</tr>`+
+      rev().map(s=>`<tr><td>${sLabel(s)}</td>`+MODELS.map(m=>{const ok=matches(predict(m,s.gen,s.heated),observe(S.world,s.gen,s.heated));return `<td class="${ok?'ok':'no'}">${ok?t.okTxt:t.noTxt}</td>`;}).join('')+`</tr>`).join('')+
+      `<tr><th>${t.state}</th>`+MODELS.map(m=>`<th class="${alive.includes(m)?'ok':'no'}">${alive.includes(m)?t.alive:t.dead}</th>`).join('')+`</tr></table>`;
+  h+=`</section><section class="card"><h2>${t.h4}</h2>${conclusion()}</section>`;
+  h+=`<section class="card" id="mdetcard"><details id="mdet" ${S.mOpen?'open':''}><summary>${t.mdet}</summary><h2 style="margin-top:12px">${t.hm}</h2><p>${t.hmp}</p><div class="row" role="radiogroup">`+
+    MODELS.map(m=>`<label><input type="radio" name="mol" id="mol-${m}" value="${m}" ${S.mol===m?'checked':''}> ${t.names[m]}</label>`).join(' &nbsp; ')+`</div>
+    <div class="legend"><span><span class="sw" style="background:#C2410C;height:9px;border:1.5px solid #1F2A37"></span>${t.heavy}</span><span><span class="sw" style="background:#0F766E;height:4px"></span>${t.light}</span></div>
+    <div class="mols">`+[0,1,2,3,4].map(g=>`<div class="molcol"><b>G${g}</b><br>${molSVG(S.mol,g)}</div>`).join('')+`</div></details></section>`;
+  if(P()){
+    h+=`<section class="card"><details id="tdet" ${S.tOpen?'open':''}><summary>${t.teacher}</summary><p class="note">${t.teacherP}</p><div class="row" role="radiogroup">`+
+      MODELS.map(m=>`<label><input type="radio" name="world" id="w-${m}" value="${m}" ${S.world===m?'checked':''}> ${t.names[m]}</label>`).join(' &nbsp; ')+`</div></details></section>`;
+  }else{
+    h+=`<section class="card"><h2>${t.h5}</h2>`;
+    if(!rev().length)h+=`<p>${t.sumEmpty}</p>`;
+    else{
+      h+=`<table><tr><th>${t.colSample}</th><th>${t.colBands}</th><th>${t.colHyp}</th><th>${t.colJ}</th><th>${t.colRes}</th></tr>`+
+        rev().map(s=>{const cm=compat(s);return `<tr><td>${sLabel(s)}</td><td>${descBands(observe(S.world,s.gen,s.heated))} ${t.rho}</td><td>${s.hyp?t.names[s.hyp]:'—'}</td><td>${esc(s.just||'')}</td><td>${cm.length?cm.map(m=>t.names[m]).join(', '):t.none}</td></tr>`;}).join('')+`</table>`+
+        `<textarea id="sumtxt" readonly rows="6" style="margin-top:12px" aria-label="${t.h5}">${esc(summaryText())}</textarea>
+        <div class="row"><button class="btn" id="copy">${t.copy}</button><span class="note" id="copymsg" aria-live="polite"></span></div><p class="note">${t.printTip}</p>`;
+    }
+    h+=`</section><section class="card" id="quiz"><h2>${t.h6}</h2>`;
+    if(!(rev().length&&alive.length===1))h+=`<p>${t.quizLock}</p>`;
+    else h+=t.quiz.map((q,n)=>{const a=S.quiz[n];
+      return `<fieldset class="q"><legend><b>${n+1}.</b> ${q.q}</legend>`+q.opts.map((o,k)=>`<label class="opt"><input type="radio" name="q${n}" id="q${n}-${k}" value="${k}" ${a===k?'checked':''}> ${o}</label>`).join('')+
+        (a===undefined?'':a===q.ok?`<div class="fb fbok"><b>${t.correct}</b> ${q.fb}</div>`:`<div class="fb fbno"><b>${t.retry}</b> ${t.hintL}: ${q.hint}</div>`)+`</fieldset>`;}).join('');
+    h+=`</section>`;
+  }
+  h+=footer(t);
+  app.innerHTML=h;
+  app.querySelectorAll('canvas[data-ref]').forEach(cv=>{const r=refs.find(r=>r.id===cv.dataset.ref);draw(cv,{bands:r.bands,kind:'full',heated:!!r.heated});});
+  app.querySelectorAll('canvas[data-c]').forEach(cv=>{const s=S.samples[+cv.dataset.c],k=cv.dataset.kind;
+    draw(cv,{bands:k==='strip0'?[]:observe(S.world,s.gen,s.heated),kind:k==='full'?'full':'strip',heated:s.heated,marks:s.marks});});
+  app.querySelectorAll('canvas[data-p]').forEach(cv=>{const [i,m]=cv.dataset.p.split('|');const s=S.samples[+i];draw(cv,{bands:predict(m,s.gen,s.heated),kind:'mini',heated:s.heated});});
+  if(act){const e=document.getElementById(act);if(e){e.focus();if(sel&&e.setSelectionRange)e.setSelectionRange(sel[0],sel[1]);}}
+  save();startTick();
+}
+function footer(t){
+  return `<footer><p>${t.sim}</p><p><b>${t.src}:</b> Meselson, M. y Stahl, F. W. (1958). <i>The replication of DNA in Escherichia coli</i>. PNAS 44(7): 671–682, <a href="https://doi.org/10.1073/pnas.44.7.671" target="_blank" rel="noopener">doi:10.1073/pnas.44.7.671</a> · <a href="https://en.wikipedia.org/wiki/Meselson%E2%80%93Stahl_experiment" target="_blank" rel="noopener">Wikipedia: Meselson–Stahl experiment</a>.</p></footer>`;
+}
+
+let tk=null;
+function startTick(){if(tk||S.mode!=='ind'||!S.samples.some(s=>waitLeft(s)>0))return;tk=setTimeout(tick,500);}
+function tick(){tk=null;S.samples.forEach((s,i)=>{if(s.stage!==0)return;const g=gate(s),cd=document.getElementById('cd'+i),b=document.getElementById('adv'+i);if(cd)cd.textContent=g.msg;if(b)b.disabled=g.dis;});startTick();}
+
+const app=document.getElementById('app');
+app.addEventListener('click',(e)=>{
+  const cv=e.target.closest('canvas.mk');
+  if(cv){const s=S.samples[+cv.dataset.c];if(!s||s.stage!==0)return;
+    const r=cv.getBoundingClientRect(),W=cv.clientWidth,pad=10,rho=RMIN+(e.clientX-r.left-pad)/(W-2*pad)*(RMAX-RMIN);
+    const tol=(RMAX-RMIN)*16/W,k=s.marks.findIndex(m=>Math.abs(m-rho)<tol);
+    if(k>=0)s.marks.splice(k,1);else if(s.marks.length<(P()?8:3))s.marks.push(Math.min(RMAX,Math.max(RMIN,rho)));
+    render();return;}
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.lang){S.lang=b.dataset.lang;try{localStorage.setItem(LKEY,S.lang);}catch(err){}render();}
+  else if(b.dataset.mode){S.mode=b.dataset.mode;S.world='semi';S.async=false;resetExp();if(S.mode==='ind')load();render();window.scrollTo(0,0);}
+  else if(b.id==='chmode'){S.mode=null;render();window.scrollTo(0,0);}
+  else if(b.id==='reset'){resetExp();if(S.mode==='ind'){try{localStorage.removeItem(KEY);}catch(err){}}render();}
+  else if(b.id==='next'&&S.gen<4){S.gen=Math.min(4,Math.round((S.gen+(S.async?0.5:1))*10)/10);render();}
+  else if(b.id==='spin'){
+    if(!S.samples.some(s=>s.gen===S.gen&&s.heated===S.heat)){S.samples.push({gen:S.gen,heated:S.heat,stage:0,marks:[],t0:Date.now(),hyp:null,just:'',votes:{semi:0,cons:0,disp:0}});S.samples.sort((a,c)=>a.gen-c.gen||(a.heated-c.heated));}
+    render();}
+  else if(b.dataset.adv!==undefined){const s=S.samples[+b.dataset.adv];if(s&&!gate(s).dis&&s.stage<4){s.stage++;render();}}
+  else if(b.dataset.rm!==undefined){S.samples.splice(+b.dataset.rm,1);render();}
+  else if(b.dataset.vote){const [i,m,d]=b.dataset.vote.split('|');const s=S.samples[+i];s.votes[m]=Math.max(0,s.votes[m]+(+d));render();}
+  else if(b.id==='copy'){
+    const ta=document.getElementById('sumtxt'),msg=document.getElementById('copymsg'),t=T();
+    const fallback=()=>{ta.focus();ta.select();msg.textContent=t.copyFail;};
+    try{navigator.clipboard.writeText(ta.value).then(()=>{msg.textContent=t.copied;},fallback);}catch(err){fallback();}
+  }
+});
+app.addEventListener('change',(e)=>{
+  const el=e.target;
+  if(el.dataset.j!==undefined){const s=S.samples[+el.dataset.j];if(s){s.just=el.value;save();}return;}
+  if(el.id==='heat')S.heat=el.checked;
+  else if(el.id==='async'){S.async=el.checked;resetExp();}
+  else if(el.name==='mol')S.mol=el.value;
+  else if(el.name==='world'){S.world=el.value;resetExp();}
+  else if(el.dataset.i!==undefined){S.samples[+el.dataset.i].hyp=el.value;}
+  else if(/^q\d+$/.test(el.name)){S.quiz[+el.name.slice(1)]=+el.value;}
+  render();
+});
+app.addEventListener('input',(e)=>{const el=e.target;if(el.dataset&&el.dataset.j!==undefined){const s=S.samples[+el.dataset.j];if(s){s.just=el.value;save();}}});
+app.addEventListener('toggle',(e)=>{const el=e.target;if(el.id==='tdet')S.tOpen=el.open;else if(el.id==='mdet')S.mOpen=el.open;else if(el.dataset&&el.dataset.k)S.openDone[el.dataset.k]=el.open;},true);
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(render,150);});
+render();
+</script>
+</body>
+</html>
